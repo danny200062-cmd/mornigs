@@ -87,7 +87,7 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
 <div class="wrap">
   <div class="eyebrow">莫尼早午餐 · 旁聽點餐系統 · 第二份</div>
   <h1>感知層與理解層模型選型</h1>
-  <p class="lede">三家官方文件查完的結論：感知層（語音辨識）選 Gemini，理解層（把話變成點餐指令）照老闆決定用 Gemini。Claude 沒有語音輸入，不進感知層。三個決定連同「社守 POS、先做大德」一併記入藍圖。</p>
+  <p class="lede">三家官方文件查完的結論：感知層（語音辨識）選 Gemini。Claude 沒有語音輸入，不進感知層。理解層依老闆決定導入 Jev（TypeSafe AI 的 System One 決策模型）做直覺式判斷，設計細節在第三份「理解層設計與菜單知識庫」。</p>
   <div class="meta"><span>2026-09-28</span><span>資料來源：三家官方文件（連結在頁尾）</span><span>匯率估算 1 USD ≈ NT$32</span></div>
 
   <h2>1. 結論先講</h2>
@@ -96,7 +96,7 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     <div class="v alt"><div class="lab">感知層 · 備援</div><h3>GPT gpt-live-transcribe</h3><p>功能同級，官方明列支援 <span class="k">zh-tw</span>、<span class="k">cmn</span>、<span class="k">yue</span>；關鍵詞提示、可調延遲。每分鐘 US$0.017，約 Gemini 的 1.9 倍。Gemini 評測沒過就切這條，程式介面設計成可抽換。</p></div>
     <div class="v no"><div class="lab">感知層 · 不採用</div><h3>Claude</h3><p>Claude API 沒有語音輸入。官方範例都是接 Deepgram／ElevenLabs 先轉文字再給 Claude，等於要多買一家。不進感知層；可留在離線對帳與評測當第二意見。</p></div>
   </div>
-  <div class="note acc"><b>理解層：</b>依老闆決定採 Gemini 3.8 Flash 做「直覺式判斷」——每句話一次呼叫、結構化輸出點餐指令、菜單放在 context cache。感知與理解同一家，一組憑證、一份帳單、一個 SDK。</div>
+  <div class="note warn"><b>更正（同日）：</b>老闆說的「JEV」是 TypeSafe AI 於 2026-09-15 發布的 Jev，不是 Gemini。本頁第 4 節的理解層設計已被第三份文件取代：Jev 做判斷（門控、單品項快車道、指令裁判），Gemini 3.8 Flash 只做多品項抽取與核對總校對。感知層結論不變。</div>
 
   <h2>2. 感知層三家對照（只列會影響設計的項目）</h2>
   <div class="tbl"><table>
@@ -123,7 +123,7 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     <div class="card"><h3>繁簡轉換與評測是必做</h3><p>Gemini 輸出可能是簡體，加一層 OpenCC 轉繁體（毫秒級）。真正的風險是台灣國語與台語命中率，只有第 0 階段的 200 句評測能回答，這是選型的最後一關。</p></div>
   </div>
 
-  <h2>4. 理解層：Gemini 3.8 Flash 直覺式判斷</h2>
+  <h2>4. 理解層（已被第三份取代，保留供對照）</h2>
   <div class="flow">
     <div class="stage e"><div class="n">輸入</div><h3>最新一句 ＋ 草稿單摘要</h3><p>只給「誰說的、說了什麼」與目前草稿單的編號清單，不給整段歷史。</p></div>
     <div class="arrow">→</div>
@@ -169,10 +169,10 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     <thead><tr><th>事項</th><th>決定</th><th>狀態</th></tr></thead>
     <tbody>
       <tr><td>感知層模型</td><td>Gemini 3.5 Transcribe Live；GPT 為備援，介面可抽換</td><td><span class="pill acc">待第 0 階段評測確認</span></td></tr>
-      <tr><td>理解層模型</td><td>Gemini 3.8 Flash 直覺式判斷；核對階段開延伸思考總校對</td><td><span class="pill ok">定案</span></td></tr>
+      <tr><td>理解層模型</td><td>Jev 判斷 ＋ Gemini 3.8 Flash 抽取（見第三份）</td><td><span class="pill ok">定案</span></td></tr>
       <tr><td>POS</td><td>社守 POS（GeoShop）</td><td><span class="pill ok">定案</span></td></tr>
       <tr><td>首發店</td><td>大德店</td><td><span class="pill ok">定案</span></td></tr>
-      <tr><td>菜單結構</td><td>等老闆匯出前台平板點餐架構</td><td><span class="pill fast">等資料</span></td></tr>
+      <tr><td>菜單結構</td><td>POS 價目表已匯出並建成知識庫（見第三份）</td><td><span class="pill ok">完成</span></td></tr>
     </tbody>
   </table></div>
 

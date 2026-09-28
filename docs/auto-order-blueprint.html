@@ -114,7 +114,7 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
   <h1>旁聽式自動點餐系統 架構藍圖</h1>
   <p class="lede">櫃台不改流程、不多打一個字。系統在旁邊「聽」櫃台人員和客人講話，邊聽邊把餐點整理成點餐單，客人核對時說改就改，確認後直接送 POS 出單。</p>
   <div class="meta">
-    <span>版本 v0.2 藍圖</span><span>2026-09-28</span><span>已定案：社守 POS · 先做大德 · 感知／理解層 Gemini</span>
+    <span>版本 v0.3 藍圖</span><span>2026-09-28</span><span>已定案：社守 POS · 先做大德 · 感知層 Gemini · 理解層 Jev＋Gemini</span>
   </div>
   <div class="tags">
     <span class="tag">待命 <b>8 小時／天</b></span>
@@ -141,7 +141,7 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     <div class="arrow">→</div>
     <div class="stage cloud"><div class="n">③ 聽寫</div><h3>串流語音辨識</h3><p>Gemini 3.5 Transcribe Live。載入菜單詞庫提高品名命中率，輸出轉繁體。</p><span class="where">雲端 Gemini</span></div>
     <div class="arrow">→</div>
-    <div class="stage cloud"><div class="n">④ 理解</div><h3>餐點差異抽取</h3><p>Gemini 3.8 Flash 直覺式判斷：對照菜單主庫，把這句話轉成「加／減／改」指令，附信心分數。</p><span class="where">雲端 Gemini</span></div>
+    <div class="stage cloud"><div class="n">④ 理解</div><h3>判斷 ＋ 抽取</h3><p>Jev 先判斷意圖與品項數（100 ms）；單品項由 Jev 兩層 Choice 直接定位，多品項交 Gemini 抽取，再由 Jev 給校準信心。</p><span class="where">雲端 Jev ＋ Gemini</span></div>
     <div class="arrow">→</div>
     <div class="stage cloud"><div class="n">⑤ 狀態</div><h3>草稿單狀態機</h3><p>逐筆套用指令、記錄版本、判斷現在是「點餐中」還是「核對中」。</p><span class="where">雲端／店內</span></div>
     <div class="arrow">→</div>
@@ -259,7 +259,7 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     <div class="card"><h3>風險：櫃台不信任</h3><p>平板顯示錯一次，櫃台就不看了。對策：前兩週只顯示不放行，讓櫃台看到它「會跟上」再開自動。</p></div>
     <div class="card"><h3>已定 ①：POS 為社守（GeoShop）</h3><p>成本系統已用 HTTP API 讀取其後台；社守官方有 Uber Eats／線上訂單自動接收通道，要問能否開放給自家系統當方式 A。</p></div>
     <div class="card"><h3>已定 ②：先做大德店</h3><p>跑滿一個月對帳後再複製到岡山。</p></div>
-    <div class="card"><h3>待決 ③：套餐與加購規則</h3><p>「+蛋+飲料」的套餐碼、加購價、飲料冷熱甜度，需要一份櫃台實際的點法清單。</p></div>
+    <div class="card"><h3>已定 ③：菜單結構</h3><p>POS 價目表已匯出並建成知識庫（27 分類／303 品／656 選項群）。剩「櫃台打單慣例」要問大德櫃台：套餐 vs 單點＋加購套餐、蛋吐司 vs 肉蛋吐司。</p></div>
   </div>
 
   <h2>11. 分階段落地</h2>
