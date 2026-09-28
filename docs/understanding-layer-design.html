@@ -1,0 +1,225 @@
+<title>理解層設計與菜單知識庫</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --surface-2:#E9EDF1; --line:#D3DAE1;
+  --ink:#1B2430; --ink-2:#4B5663; --muted:#7A8592;
+  --accent:#0F6E8C; --accent-soft:#DCEEF4;
+  --fast:#B96A0B; --fast-soft:#FBEBD2;
+  --ok:#2E7D4F; --ok-soft:#DDF0E4;
+  --warn:#B3403A; --warn-soft:#F6DEDC;
+  --jev:#7A3E9D; --jev-soft:#EDE3F4;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11161C; --surface:#1A2129; --surface-2:#232C36; --line:#33404C;
+    --ink:#E7ECF1; --ink-2:#B9C3CE; --muted:#8C98A5;
+    --accent:#5FB6D3; --accent-soft:#163C49;
+    --fast:#E5A24A; --fast-soft:#3F2D12;
+    --ok:#6CC493; --ok-soft:#183626;
+    --warn:#E5837D; --warn-soft:#452021;
+    --jev:#C39BE0; --jev-soft:#33234A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11161C; --surface:#1A2129; --surface-2:#232C36; --line:#33404C;
+  --ink:#E7ECF1; --ink-2:#B9C3CE; --muted:#8C98A5;
+  --accent:#5FB6D3; --accent-soft:#163C49;
+  --fast:#E5A24A; --fast-soft:#3F2D12;
+  --ok:#6CC493; --ok-soft:#183626;
+  --warn:#E5837D; --warn-soft:#452021;
+  --jev:#C39BE0; --jev-soft:#33234A;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.7}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:32px 64px}
+h1,h2,h3{text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:30px;font-weight:700}
+h2{font-size:21px;font-weight:700;margin-top:52px;padding-bottom:10px;border-bottom:2px solid var(--line)}
+h3{font-size:16px;font-weight:700}
+p{margin:10px 0;max-width:72ch}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.lede{font-size:17px;color:var(--ink-2);max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:14px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h3{margin-bottom:6px}
+.card p{font-size:14px;color:var(--ink-2);margin:6px 0}
+.card ul{margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--ink-2)}
+.card li{margin:3px 0}
+.k{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:1px 6px;border-radius:4px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{background:var(--surface-2);font-weight:700;font-size:13px}
+tr:last-child td{border-bottom:none}
+td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.pill.fast{background:var(--fast-soft);color:var(--fast)}
+.pill.jev{background:var(--jev-soft);color:var(--jev)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-top:18px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.stat .v{font-family:var(--mono);font-size:24px;font-weight:500;font-variant-numeric:tabular-nums}
+.stat .l{font-size:12.5px;color:var(--muted)}
+.flow{display:flex;gap:0;margin-top:18px;overflow-x:auto;padding-bottom:6px}
+.stage{flex:1 1 165px;min-width:165px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.stage.j{border-top:4px solid var(--jev)}
+.stage.g{border-top:4px solid var(--accent)}
+.stage.e{border-top:4px solid var(--ok)}
+.stage .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.stage h3{font-size:15px;margin:2px 0 6px}
+.stage p{font-size:13px;color:var(--ink-2);margin:0}
+.arrow{flex:0 0 26px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin-top:10px}
+.legend span::before{content:"";display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.legend .j::before{background:var(--jev)} .legend .g::before{background:var(--accent)} .legend .e::before{background:var(--ok)}
+.note{border-left:4px solid var(--fast);background:var(--fast-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:14px;font-size:14px}
+.note.acc{border-left-color:var(--accent);background:var(--accent-soft)}
+.note.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.note.jev{border-left-color:var(--jev);background:var(--jev-soft)}
+.schema{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:16px}
+.ent{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.ent .h{background:var(--surface-2);padding:8px 12px;font-weight:700;font-size:14px;font-family:var(--mono)}
+.ent ul{list-style:none;margin:0;padding:8px 12px;font-size:13px;font-family:var(--mono);color:var(--ink-2)}
+.ent li{padding:2px 0}
+.ent li b{color:var(--ink);font-weight:500}
+.src{font-size:12.5px;color:var(--muted);margin-top:24px}
+.src a{color:var(--accent)}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">莫尼早午餐 · 旁聽點餐系統 · 第三份</div>
+  <h1>理解層設計與菜單知識庫</h1>
+  <p class="lede">兩件事在這一頁定案：一、理解層改成「Jev 直覺判斷 ＋ Gemini 抽取」雙模型，Jev 是 TypeSafe AI 的 System One 決策模型，不是 Gemini（前一份選型頁誤讀，已更正）。二、社守 POS 匯出的價目表已整理成理解層用的菜單知識庫。</p>
+  <div class="meta"><span>2026-09-28</span><span>知識庫來源：POS 價目表匯出 2026-09-28</span><span>Jev 資料來源：TypeSafe 官方文件（頁尾）</span></div>
+
+  <h2>1. Jev 是什麼、適合做什麼</h2>
+  <div class="grid">
+    <div class="card"><h3>不生成文字，只回答「典型化的判斷」</h3><p>輸入一段 state（文字或結構資料），問它幾個事先定義好型別的問題，一次全部平行回答。三種問法：</p><ul><li><span class="k">Choice</span>：從你列的選項裡挑一個（最多 255 個），附每個選項的機率與信心</li><li><span class="k">Score</span>：在你定義的 2～10 個等級上打分</li><li><span class="k">Noul</span>：這句話是真的嗎？回 0～1 的機率</li></ul></div>
+    <div class="card"><h3>快、便宜、信心分數是真的</h3><ul><li>官方稱端到端 70～500 ms（美西機房；台灣打過去要再加約 150 ms 來回）</li><li>輸入每百萬 token US$0.042，輸出免費。整天 2,000 次呼叫約 NT$3</li><li>用 RLCD 訓練：信心高就真的比較準。LLM 自己報的信心分數做不到這點</li><li>不可能輸出型別錯誤：答案一定在你給的選項裡</li></ul></div>
+    <div class="card"><h3>做不到的事（設計要繞開）</h3><ul><li>不能生成字串：無法自己「寫出」一張點餐單，只能在你給的選項裡選</li><li>一次 Choice 上限 255 個選項；菜單 303 品要分兩層問</li><li>每個問題獨立評估，「第二個提到的餐點」這種相對指涉要靠問法設計</li><li>目前是 early access，要排隊拿 key；公開端點約 8 個並發就會限流（一個櫃台夠用）</li><li>中文能力官方未列，第 0 階段評測必測</li></ul></div>
+  </div>
+  <div class="note jev">官方自己的定位：「AI 版的 if 判斷式」——分類、路由、打分、抽取單一欄位、決定分支。點餐流程裡正好有一大堆這種判斷。</div>
+
+  <h2>2. 理解層：一句話進來之後的路</h2>
+  <div class="flow">
+    <div class="stage e"><div class="n">輸入</div><h3>定稿的一句話</h3><p>誰說的、文字、目前草稿單（含編號）。</p></div>
+    <div class="arrow">→</div>
+    <div class="stage j"><div class="n">① Jev 門控 · 約 100 ms</div><h3>這句話是什麼</h3><p>意圖（點餐／修改／取消／同意／否定／閒聊）、提到幾個品項、客人是否在確認、櫃台是否在複誦。一次呼叫、七個問題平行回答。</p></div>
+    <div class="arrow">→</div>
+    <div class="stage j"><div class="n">② Jev 快車道 · 單品項</div><h3>兩層 Choice 直接定位</h3><p>先選分類（27 選 1）、再選品項（該分類 ≤ 23 選 1）、再問選項（每個選項群一題）。全部信心過門檻就直接套用，不經 Gemini。</p></div>
+    <div class="arrow">→</div>
+    <div class="stage g"><div class="n">③ Gemini 抽取 · 多品項或低信心</div><h3>生成差異指令</h3><p>gemini-3.8-flash，菜單放 context cache，結構化輸出 add／remove／set_qty／set_option／replace。</p></div>
+    <div class="arrow">→</div>
+    <div class="stage j"><div class="n">④ Jev 裁判 · 每條指令</div><h3>校準過的信心</h3><p>對每條指令問一個 Noul：「這句話是否真的要點〈品項＋選項〉？」機率就是平板上的黃底門檻與快速通道的放行依據。</p></div>
+    <div class="arrow">→</div>
+    <div class="stage e"><div class="n">輸出</div><h3>指令＋信心</h3><p>套用到草稿單、推到平板。</p></div>
+  </div>
+  <div class="legend"><span class="j">Jev（判斷）</span><span class="g">Gemini（生成）</span><span class="e">系統自己的程式</span></div>
+
+  <div class="tbl"><table>
+    <thead><tr><th>Jev 在哪一步</th><th>問法</th><th>為什麼是 Jev 不是 LLM</th></tr></thead>
+    <tbody>
+      <tr><td>① 門控</td><td><span class="k">Choice</span> 意圖 ×1、<span class="k">Choice</span> 品項數（0／1／2／3+）、<span class="k">Noul</span> 客人同意、<span class="k">Noul</span> 客人否定、<span class="k">Noul</span> 櫃台複誦中、<span class="k">Noul</span> 提到選項、<span class="k">Noul</span> 與點餐無關</td><td>估計 3～4 成的話是閒聊或與點餐無關，100 ms 內先擋掉，Gemini 根本不用叫。狀態機的轉換（聆聽→核對→確認）全靠這幾個機率驅動。</td></tr>
+      <tr><td>② 快車道</td><td>第一層 <span class="k">Choice</span> 分類（27 項）→ 第二層 <span class="k">Choice</span> 該分類品項 → 第三層每個選項群一題（單選用 <span class="k">Choice</span>，多選每個選項一個 <span class="k">Noul</span>），加數量 <span class="k">Choice</span>（1～5）</td><td>熟客一句「肉蛋吐司加起司」三次 Jev 呼叫 ≈ 0.5 秒完成，不用等 LLM 生成。這是「快速反應」需求的主要實現路徑。</td></tr>
+      <tr><td>④ 裁判</td><td>對 Gemini 的每條指令問 <span class="k">Noul</span>「原句是否明確要這個」；核對階段對每條草稿再問「櫃台複誦與此條一致」</td><td>藍圖裡「信心 ≥ 0.9 才自動放行」這條規則需要一個校準過的數字。LLM 自報的 0.9 不是 0.9，Jev 的是。</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note acc"><b>兩個模型各做擅長的事。</b>Gemini 負責「把一長串話變成結構」（生成），Jev 負責「這個判斷對不對、多有把握」（決策）。前一版把兩件事都塞給 Gemini，信心分數是它自己講的；現在信心來自一個專門為此訓練的模型。</div>
+
+  <h2>3. 延遲預算更新</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>路徑</th><th>環節</th><th class="num">目標</th></tr></thead>
+    <tbody>
+      <tr><td rowspan="3">單品項（Jev 快車道）</td><td>① 門控</td><td class="num">≤ 300 ms（含台美來回）</td></tr>
+      <tr><td>② 分類 → 品項 → 選項，三次序列呼叫</td><td class="num">≤ 700 ms</td></tr>
+      <tr><td><b>語音定稿 → 平板更新</b></td><td class="num"><b>≤ 1.2 s</b></td></tr>
+      <tr><td rowspan="3">多品項（Gemini 抽取）</td><td>① 門控</td><td class="num">≤ 300 ms</td></tr>
+      <tr><td>③ Gemini 抽取 ＋ ④ Jev 裁判（可平行等待）</td><td class="num">≤ 1,000 ms</td></tr>
+      <tr><td><b>語音定稿 → 平板更新</b></td><td class="num"><b>≤ 1.5 s</b></td></tr>
+      <tr><td>閒聊／無關</td><td>① 門控後直接丟棄</td><td class="num">≤ 300 ms，不佔任何後續資源</td></tr>
+    </tbody>
+  </table></div>
+  <p>Jev 的美西機房是唯一的地理風險：每次呼叫固定多 150 ms 來回。快車道三次序列呼叫就是 450 ms 的純網路時間。若評測時體感不夠快，改成「分類與品項同一次問」（第一層改問 27 個分類 ＋ 第二層對常點的前 200 品直接問）可以省一次來回。</p>
+
+  <h2>4. 菜單知識庫：從 POS 匯出檔整理出來的</h2>
+  <div class="stats">
+    <div class="stat"><div class="v">27</div><div class="l">櫃台用分類</div></div>
+    <div class="stat"><div class="v">303</div><div class="l">品項（296 在售）</div></div>
+    <div class="stat"><div class="v">656</div><div class="l">選項群</div></div>
+    <div class="stat"><div class="v">2,639</div><div class="l">選項值</div></div>
+    <div class="stat"><div class="v">44</div><div class="l">單選（改變品項身分的）選項群</div></div>
+    <div class="stat"><div class="v">39</div><div class="l">套餐飲品共用清單</div></div>
+  </div>
+
+  <h3 style="margin-top:28px">匯出檔裡其實有五個銷售通道</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>標籤</th><th>內容</th><th class="num">分類／品項</th><th>怎麼用</th></tr></thead>
+    <tbody>
+      <tr><td><span class="k">TAG-A1</span></td><td>常用（蛋吐司、荷包蛋、提袋…）、特別預購、加減價</td><td class="num">3 ／ 15</td><td><span class="pill ok">進知識庫</span></td></tr>
+      <tr><td><span class="k">SALE-ONLINE</span></td><td>店內主菜單 22 個分類</td><td class="num">22 ／ 246</td><td><span class="pill ok">進知識庫</span></td></tr>
+      <tr><td><span class="k">SALE-PACKAGE</span></td><td>套餐飲品 39 種、套餐加購 A／B／C 餐</td><td class="num">2 ／ 42</td><td><span class="pill ok">進知識庫（當子表）</span></td></tr>
+      <tr><td><span class="k">API-FP, API-UE</span></td><td>外送平台菜單（foodpanda、Uber Eats）</td><td class="num">22 ／ 179</td><td><span class="pill acc">不進；但證明社守有 API 接單通道</span></td></tr>
+      <tr><td>（無標籤）</td><td>外送菜單的兩份無選項副本</td><td class="num">44 ／ 358</td><td><span class="pill warn">略過</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note"><b>API-FP／API-UE 這兩個標籤是重要線索。</b>社守 POS 已經在用 API 接 foodpanda 與 Uber Eats 的訂單，等於「外部訂單進 POS」的路已經鋪好。問社守時直接問：「我們自家系統能不能像外送平台一樣，用同一種方式把訂單送進 POS？」</div>
+
+  <h3 style="margin-top:28px">知識庫結構</h3>
+  <div class="schema">
+    <div class="ent"><div class="h">category</div><ul><li><b>id</b></li><li>name（POS 分類名）</li><li>channel（TAG-A1／SALE-ONLINE…）</li><li>sort</li></ul></div>
+    <div class="ent"><div class="h">product</div><ul><li><b>id</b></li><li>category_id</li><li>pos_name（含 (NEW)／(推薦)）</li><li>clean_name（去裝飾）</li><li>price / status</li><li>desc（已含一顆蛋…）</li><li>image_code</li></ul></div>
+    <div class="ent"><div class="h">option_group</div><ul><li><b>id</b></li><li>product_id</li><li>pos_name（原始名）</li><li>kind（正規化 7 類）</li><li>type 單選／多選</li><li>min / max</li><li>changes_identity</li></ul></div>
+    <div class="ent"><div class="h">option</div><ul><li><b>id</b></li><li>group_id</li><li>name / fee</li><li>package_ref → product</li></ul></div>
+    <div class="ent"><div class="h">alias</div><ul><li><b>id</b></li><li>target（product／option）</li><li>spoken（口語說法）</li><li>source（人工／評測學到）</li></ul></div>
+    <div class="ent"><div class="h">vocab（給語音辨識）</div><ul><li>term</li><li>weight（依銷量）</li></ul></div>
+  </div>
+
+  <h3 style="margin-top:28px">整理時發現的六件事</h3>
+  <div class="tbl"><table>
+    <thead><tr><th>發現</th><th>對系統的影響</th><th>處理</th></tr></thead>
+    <tbody>
+      <tr><td>選項群名稱有 18 種寫法：加購、加購(內用已備有調味區請勿點選)、備註、註、調整、換種類、種類、類別、醬類…</td><td>模型看到的是雜訊</td><td>正規化成 7 類：<span class="k">addon 加購</span>／<span class="k">remark 備註</span>／<span class="k">swap 換種類</span>／<span class="k">variant 種類</span>／<span class="k">sauce 醬類</span>／<span class="k">sweetness 甜度</span>／<span class="k">package 套餐</span></td></tr>
+      <tr><td>套餐飲品 39 種在 13 個套餐裡各抄一次（共 624 行）</td><td>知識庫膨脹、改一次飲料要改 13 處</td><td>抽成一張子表，套餐選項用 <span class="k">package_ref</span> 指過去</td></tr>
+      <tr><td>單選群只有四組會改變品項身分：果醬吐司.厚片／類別（10）、義大利麵.燉飯／種類（10）、晨露鮮蔬沙拉／醬類（7）、軟法／種類（1）</td><td>這些選項沒說就不能出單</td><td>標 <span class="k">changes_identity=true</span>，快速通道條件「必選已明講」就看這個欄位。與成本系統的 VARIANT_RULES 一致</td></tr>
+      <tr><td>「蛋吐司 30」（常用）與「肉蛋吐司 60」（生吐司）、「(套)肉蛋吐司+大薯餅+飲品」與「肉蛋吐司＋加購套餐 B」是不同東西</td><td>客人一句「肉蛋吐司套餐」有兩種打法</td><td><span class="pill fast">要問櫃台慣例</span>：櫃台平常怎麼打？答案寫進 alias 表</td></tr>
+      <tr><td>品名帶裝飾：(NEW)、(推薦)、Pig肉鬆、湯種 厚片（有空格）</td><td>語音不會唸出 (NEW)</td><td>clean_name 去掉裝飾，語音詞庫用 clean_name</td></tr>
+      <tr><td>「餐點備註(加減價)」是金額調整列，不是餐點</td><td>模型可能把它當品項</td><td>排除在 Choice 選項外（成本系統 L8 同一規則）</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>5. 知識庫怎麼餵給三個模型</h2>
+  <div class="grid">
+    <div class="card"><h3>Gemini 語音辨識 · custom_vocabulary</h3><p>上限 1,000 詞、建議 ≤ 100。取 clean_name 去重後約 150 個品名，用成本系統已有的 POS 銷售資料依銷量排序取前 100，再補「加起司、加蛋、不美乃滋、去邊」等高頻選項詞。</p></div>
+    <div class="card"><h3>Jev · 每次呼叫現組選項</h3><p>Jev 沒有快取概念，選項列表隨呼叫送。第一層 27 個分類名、第二層該分類品項（最多 23）、第三層該品項的選項群。每次 state 只放「這句話＋草稿單摘要」，約 300～600 token。</p></div>
+    <div class="card"><h3>Gemini 抽取 · context cache</h3><p>不把 2,639 個選項全塞進去。快取裡放「分類 → clean_name → 價格 → 哪些選項群」的精簡表（約 6k token），選項細節在指令送出後由程式驗證。快取儲存費每小時約 US$0.003。</p></div>
+  </div>
+
+  <h2>6. 更新後的已定案與待確認</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>事項</th><th>決定</th><th>狀態</th></tr></thead>
+    <tbody>
+      <tr><td>理解層 · 判斷</td><td>Jev（jev-latest）做門控、單品項快車道、指令裁判</td><td><span class="pill jev">定案；申請 early access 中</span></td></tr>
+      <tr><td>理解層 · 生成</td><td>Gemini 3.8 Flash 做多品項抽取與核對總校對</td><td><span class="pill ok">定案</span></td></tr>
+      <tr><td>感知層</td><td>Gemini 3.5 Transcribe Live（GPT 備援）</td><td><span class="pill acc">待第 0 階段評測</span></td></tr>
+      <tr><td>菜單知識庫</td><td>已從 POS 匯出建出 <span class="k">data/menu_kb.json</span>，建置程式 <span class="k">tools/build_menu_kb.py</span></td><td><span class="pill ok">v1 完成</span></td></tr>
+      <tr><td>櫃台打單慣例</td><td>套餐 vs 單點＋加購套餐、蛋吐司 vs 肉蛋吐司、常用區怎麼用</td><td><span class="pill fast">要問大德櫃台</span></td></tr>
+      <tr><td>Jev 中文與台灣機房延遲</td><td>拿到 key 後用 50 句先量</td><td><span class="pill fast">待評測</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="src">來源（2026-09-28 查閱）：
+    <a href="https://typesafe.ai/blog/introducing-system-one-models-and-jev">TypeSafe 發布文</a> ·
+    <a href="https://docs.typesafe.ai/introduction">Jev 文件：簡介</a> ·
+    <a href="https://docs.typesafe.ai/api">API 參考（Choice 上限 255、Score 上限 10、429／529）</a> ·
+    <a href="https://docs.typesafe.ai/confidence">信心分數</a> ·
+    <a href="https://docs.typesafe.ai/patterns">設計模式（門控路由、意圖路由、推測式扇出）</a>
+  </p>
+</div>

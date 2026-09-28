@@ -1,0 +1,187 @@
+<title>點餐系統感知層選型</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --surface-2:#E9EDF1; --line:#D3DAE1;
+  --ink:#1B2430; --ink-2:#4B5663; --muted:#7A8592;
+  --accent:#0F6E8C; --accent-soft:#DCEEF4;
+  --fast:#B96A0B; --fast-soft:#FBEBD2;
+  --ok:#2E7D4F; --ok-soft:#DDF0E4;
+  --warn:#B3403A; --warn-soft:#F6DEDC;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11161C; --surface:#1A2129; --surface-2:#232C36; --line:#33404C;
+    --ink:#E7ECF1; --ink-2:#B9C3CE; --muted:#8C98A5;
+    --accent:#5FB6D3; --accent-soft:#163C49;
+    --fast:#E5A24A; --fast-soft:#3F2D12;
+    --ok:#6CC493; --ok-soft:#183626;
+    --warn:#E5837D; --warn-soft:#452021;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11161C; --surface:#1A2129; --surface-2:#232C36; --line:#33404C;
+  --ink:#E7ECF1; --ink-2:#B9C3CE; --muted:#8C98A5;
+  --accent:#5FB6D3; --accent-soft:#163C49;
+  --fast:#E5A24A; --fast-soft:#3F2D12;
+  --ok:#6CC493; --ok-soft:#183626;
+  --warn:#E5837D; --warn-soft:#452021;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.7}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:32px 64px}
+h1,h2,h3{text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:30px;font-weight:700}
+h2{font-size:21px;font-weight:700;margin-top:52px;padding-bottom:10px;border-bottom:2px solid var(--line)}
+h3{font-size:16px;font-weight:700}
+p{margin:10px 0;max-width:72ch}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.lede{font-size:17px;color:var(--ink-2);max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:14px}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));margin-top:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h3{margin-bottom:6px}
+.card p{font-size:14px;color:var(--ink-2);margin:6px 0}
+.card ul{margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--ink-2)}
+.card li{margin:3px 0}
+.k{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:1px 6px;border-radius:4px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{background:var(--surface-2);font-weight:700;font-size:13px}
+tr:last-child td{border-bottom:none}
+td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:500;white-space:nowrap}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+.pill.fast{background:var(--fast-soft);color:var(--fast)}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:18px}
+.v{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px;border-top:5px solid var(--line)}
+.v.pick{border-top-color:var(--ok)}
+.v.alt{border-top-color:var(--fast)}
+.v.no{border-top-color:var(--warn)}
+.v .lab{font-size:12px;letter-spacing:.08em;font-weight:700;color:var(--muted)}
+.v.pick .lab{color:var(--ok)} .v.alt .lab{color:var(--fast)} .v.no .lab{color:var(--warn)}
+.v h3{margin:4px 0 6px}
+.v p{font-size:14px;color:var(--ink-2);margin:4px 0}
+.flow{display:flex;gap:0;margin-top:18px;overflow-x:auto;padding-bottom:6px}
+.stage{flex:1 1 170px;min-width:170px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.stage.g{border-top:4px solid var(--accent)}
+.stage.e{border-top:4px solid var(--ok)}
+.stage .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.stage h3{font-size:15px;margin:2px 0 6px}
+.stage p{font-size:13px;color:var(--ink-2);margin:0}
+.arrow{flex:0 0 26px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px}
+.note{border-left:4px solid var(--fast);background:var(--fast-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:14px;font-size:14px}
+.note.acc{border-left-color:var(--accent);background:var(--accent-soft)}
+.note.warn{border-left-color:var(--warn);background:var(--warn-soft)}
+.src{font-size:12.5px;color:var(--muted);margin-top:24px}
+.src a{color:var(--accent)}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">莫尼早午餐 · 旁聽點餐系統 · 第二份</div>
+  <h1>感知層與理解層模型選型</h1>
+  <p class="lede">三家官方文件查完的結論：感知層（語音辨識）選 Gemini。Claude 沒有語音輸入，不進感知層。理解層依老闆決定導入 Jev（TypeSafe AI 的 System One 決策模型）做直覺式判斷，設計細節在第三份「理解層設計與菜單知識庫」。</p>
+  <div class="meta"><span>2026-09-28</span><span>資料來源：三家官方文件（連結在頁尾）</span><span>匯率估算 1 USD ≈ NT$32</span></div>
+
+  <h2>1. 結論先講</h2>
+  <div class="verdict">
+    <div class="v pick"><div class="lab">感知層 · 選用</div><h3>Gemini 3.5 Transcribe Live</h3><p>串流語音辨識專用模型。有「暫定字幕＋定稿」兩段輸出、自訂詞庫最多 1,000 詞、伺服器＋店內混合斷句，每分鐘約 US$0.009，三家最便宜。</p><p><b>條件：</b>第 0 階段用 200 句真實對話評測，台灣國語命中率 ≥ 90% 才定案。</p></div>
+    <div class="v alt"><div class="lab">感知層 · 備援</div><h3>GPT gpt-live-transcribe</h3><p>功能同級，官方明列支援 <span class="k">zh-tw</span>、<span class="k">cmn</span>、<span class="k">yue</span>；關鍵詞提示、可調延遲。每分鐘 US$0.017，約 Gemini 的 1.9 倍。Gemini 評測沒過就切這條，程式介面設計成可抽換。</p></div>
+    <div class="v no"><div class="lab">感知層 · 不採用</div><h3>Claude</h3><p>Claude API 沒有語音輸入。官方範例都是接 Deepgram／ElevenLabs 先轉文字再給 Claude，等於要多買一家。不進感知層；可留在離線對帳與評測當第二意見。</p></div>
+  </div>
+  <div class="note warn"><b>更正（同日）：</b>老闆說的「JEV」是 TypeSafe AI 於 2026-09-15 發布的 Jev，不是 Gemini。本頁第 4 節的理解層設計已被第三份文件取代：Jev 做判斷（門控、單品項快車道、指令裁判），Gemini 3.8 Flash 只做多品項抽取與核對總校對。感知層結論不變。</div>
+
+  <h2>2. 感知層三家對照（只列會影響設計的項目）</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>Gemini <span class="pill ok">選用</span></th><th>GPT <span class="pill fast">備援</span></th><th>Claude <span class="pill warn">不採用</span></th></tr></thead>
+    <tbody>
+      <tr><td>串流語音辨識模型</td><td><span class="k">gemini-3.5-transcribe-live</span></td><td><span class="k">gpt-live-transcribe</span></td><td>無（API 不收音訊）</td></tr>
+      <tr><td>連線方式</td><td>WebSocket，16 kHz PCM，每 100 ms 一包</td><td>WebSocket／WebRTC，24 kHz PCM</td><td>—</td></tr>
+      <tr><td>即時字幕</td><td>有：<span class="k">interim</span>（邊講邊更新）＋ <span class="k">final</span>（定稿）</td><td>有：<span class="k">delta</span> 逐段 ＋ <span class="k">completed</span></td><td>—</td></tr>
+      <tr><td>斷句／VAD</td><td>三種：伺服器自動、<b>混合</b>（伺服器抓開頭＋店內抓結尾，零等待定稿）、手動</td><td>此模型不支援伺服器 VAD，<b>必須</b>店內自己斷句後送 <span class="k">commit</span></td><td>—</td></tr>
+      <tr><td>菜單詞庫加權</td><td><span class="k">custom_vocabulary</span> 最多 1,000 詞（建議 ≤ 100）</td><td><span class="k">keywords</span>＋<span class="k">prompt</span> 描述情境</td><td>—</td></tr>
+      <tr><td>語言</td><td>自動偵測含中英夾雜；官方清單列 <span class="k">cmn-Hans-CN</span> 與粵語，<b>未明列 zh-TW</b>，輸出可能是簡體</td><td>官方明列 <span class="k">zh-tw</span>、<span class="k">cmn</span>、<span class="k">yue</span></td><td>—</td></tr>
+      <tr><td>台語</td><td colspan="2">兩家官方清單都<b>沒有</b>台語（Hokkien）。台語點餐句要靠評測集實測，可能得靠菜單詞庫硬撐。</td><td>—</td></tr>
+      <tr><td>說話者分辨（櫃台／客人）</td><td>串流模式不支援</td><td>不支援</td><td>—</td></tr>
+      <tr><td>連線時長</td><td><b>單次最長 10 分鐘</b>，要自己輪替</td><td>文件未列硬限制</td><td>—</td></tr>
+      <tr><td>價格（有效對話每分鐘）</td><td class="num">≈ US$0.009</td><td class="num">US$0.017</td><td>需另購 STT</td></tr>
+      <tr><td>每天 4 小時有效對話</td><td class="num">≈ US$2.2（NT$70）</td><td class="num">≈ US$4.1（NT$130）</td><td>—</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>3. 這個選擇對架構的三個影響</h2>
+  <div class="grid">
+    <div class="card"><h3>說話者分辨要自己做</h3><p>兩家串流辨識都不分誰在講。改在店內做：櫃台人員上班時錄 10 秒聲紋註冊，店內小電腦用聲紋比對把每句話標「櫃台／客人」，再送辨識。</p></div>
+    <div class="card"><h3>10 分鐘上限反而剛好</h3><p>一組客人點餐平均 1～2 分鐘。設計成「一組客人一條連線」：待命時預先開好一條，客人開口就用，結束即關；永遠不會碰到 10 分鐘。8 小時待命不靠一條長連線撐。</p></div>
+    <div class="card"><h3>繁簡轉換與評測是必做</h3><p>Gemini 輸出可能是簡體，加一層 OpenCC 轉繁體（毫秒級）。真正的風險是台灣國語與台語命中率，只有第 0 階段的 200 句評測能回答，這是選型的最後一關。</p></div>
+  </div>
+
+  <h2>4. 理解層（已被第三份取代，保留供對照）</h2>
+  <div class="flow">
+    <div class="stage e"><div class="n">輸入</div><h3>最新一句 ＋ 草稿單摘要</h3><p>只給「誰說的、說了什麼」與目前草稿單的編號清單，不給整段歷史。</p></div>
+    <div class="arrow">→</div>
+    <div class="stage g"><div class="n">固定知識（快取）</div><h3>菜單主庫 ＋ POS 選項群組</h3><p>放 context cache，每小時儲存費約 US$0.003，呼叫時讀取價只有輸入價的 1/10。</p></div>
+    <div class="arrow">→</div>
+    <div class="stage g"><div class="n">模型</div><h3>gemini-3.8-flash</h3><p>不開延伸思考、單次呼叫、結構化輸出（JSON schema）。目標 &lt; 800 ms。</p></div>
+    <div class="arrow">→</div>
+    <div class="stage e"><div class="n">輸出</div><h3>1～3 條指令</h3><p><span class="k">add / remove / set_qty / set_option / replace</span>，每條帶信心分數與對應的草稿單編號。</p></div>
+  </div>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>設計</th></tr></thead>
+    <tbody>
+      <tr><td>「直覺式」的意思</td><td>不做多步推理、不查資料、不回頭讀整段對話。一句話進、指令出，錯了下一句會修正，核對階段再總校對。</td></tr>
+      <tr><td>核對階段的總校對</td><td>櫃台開始複誦時，改用同一模型但開延伸思考，把整段對話與草稿單一次比對，找出前面漏掉或衝突的項目。一單只跑一次。</td></tr>
+      <tr><td>價格（官方 2026 年內）</td><td class="num">輸入 US$0.75／百萬 token、輸出 US$3.75／百萬、快取讀取 US$0.075／百萬（2027 起翻倍）</td></tr>
+      <tr><td>每天估算</td><td class="num">200 單 × 約 10 次呼叫 ≈ US$2（NT$65）；含核對總校對約 NT$80</td></tr>
+      <tr><td>Claude 的位置</td><td>不在即時路徑上。每日下班後用 Claude 重跑當天文字稿做第二意見對帳，量出 Gemini 的漏判率——這是判斷理解層要不要換模型的證據來源。</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>5. 成本重估（大德店，每日）</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>前一版藍圖</th><th class="num">本次選型後</th></tr></thead>
+    <tbody>
+      <tr><td>語音辨識</td><td>NT$50–150</td><td class="num">≈ NT$70</td></tr>
+      <tr><td>理解層 LLM</td><td>NT$100–450</td><td class="num">≈ NT$80</td></tr>
+      <tr><td>雲端主機與推送</td><td>NT$30</td><td class="num">NT$30</td></tr>
+      <tr><td><b>合計</b></td><td>NT$180–630</td><td class="num"><b>≈ NT$180／天，約 NT$4,700／月</b></td></tr>
+    </tbody>
+  </table></div>
+  <p>落在前一版區間的下緣，因為兩層都選了 Flash 等級並且菜單走快取。硬體一次性費用不變。</p>
+
+  <h2>6. 社守 POS（GeoShop）對出單層的意義</h2>
+  <div class="grid">
+    <div class="card"><h3>已經有後台 API 經驗</h3><p>成本系統的 P2 爬蟲已改成「HTTP API 直取」GeoShop 後台銷售資料，兩店各一組憑證、欄位（<span class="k">o_aid / sta / ppl / qan / pc_n / menu[]</span>）都摸清了。讀的那一端不用從零開始。</p></div>
+    <div class="card"><h3>官方有「線上訂單自動接收」</h3><p>社守對外宣傳搭配 Uber Eats 串接、線上點餐訂單自動進 POS。這表示 POS 有一條「外部訂單進入」的通道——這條通道就是藍圖第 7 節的方式 A，要問社守能不能給我們用。</p></div>
+    <div class="card"><h3>要問社守的兩個問題</h3><ul><li>外部訂單匯入的介面（API 或線上點餐後台）能否開給自家系統？格式與費用？</li><li>如果不能，前台平板有沒有「待確認訂單」或掛單功能可以塞草稿單？</li></ul><p>客服 04-26312051（成本系統文件記載）。</p></div>
+  </div>
+  <div class="note">老闆要匯出的「POS 前台平板點餐架構」正是這裡最需要的東西。最好的形式：<b>分類 → 品項 → 選項群組 → 選項值</b>的完整樹（Excel／CSV／截圖都可以），加上套餐（+蛋+飲料）與加購的打法。有了它，理解層的菜單知識與出單層的格式轉換可以一次定案。</div>
+
+  <h2>7. 已定案事項</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>事項</th><th>決定</th><th>狀態</th></tr></thead>
+    <tbody>
+      <tr><td>感知層模型</td><td>Gemini 3.5 Transcribe Live；GPT 為備援，介面可抽換</td><td><span class="pill acc">待第 0 階段評測確認</span></td></tr>
+      <tr><td>理解層模型</td><td>Jev 判斷 ＋ Gemini 3.8 Flash 抽取（見第三份）</td><td><span class="pill ok">定案</span></td></tr>
+      <tr><td>POS</td><td>社守 POS（GeoShop）</td><td><span class="pill ok">定案</span></td></tr>
+      <tr><td>首發店</td><td>大德店</td><td><span class="pill ok">定案</span></td></tr>
+      <tr><td>菜單結構</td><td>POS 價目表已匯出並建成知識庫（見第三份）</td><td><span class="pill ok">完成</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <p class="src">來源（2026-09-28 查閱）：
+    <a href="https://ai.google.dev/gemini-api/docs/live-api/live-transcribe">Gemini Live 串流辨識文件</a> ·
+    <a href="https://ai.google.dev/gemini-api/docs/pricing">Gemini 定價</a> ·
+    <a href="https://developers.openai.com/api/docs/guides/realtime-transcription">OpenAI 即時辨識文件</a> ·
+    <a href="https://developers.openai.com/api/docs/pricing">OpenAI 定價</a> ·
+    <a href="https://platform.claude.com/cookbook/third-party-elevenlabs-low-latency-stt-claude-tts">Claude 語音範例（ElevenLabs 轉文字）</a> ·
+    <a href="https://platform.claude.com/docs/en/cli-sdks-libraries/libraries/openai-sdk">Claude 相容層文件（audio 欄位忽略）</a>
+  </p>
+</div>
