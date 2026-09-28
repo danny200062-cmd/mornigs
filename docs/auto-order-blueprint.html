@@ -114,7 +114,7 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
   <h1>旁聽式自動點餐系統 架構藍圖</h1>
   <p class="lede">櫃台不改流程、不多打一個字。系統在旁邊「聽」櫃台人員和客人講話，邊聽邊把餐點整理成點餐單，客人核對時說改就改，確認後直接送 POS 出單。</p>
   <div class="meta">
-    <span>版本 v0.1 藍圖</span><span>2026-09-28</span><span>狀態：待老闆拍板</span>
+    <span>版本 v0.2 藍圖</span><span>2026-09-28</span><span>已定案：社守 POS · 先做大德 · 感知／理解層 Gemini</span>
   </div>
   <div class="tags">
     <span class="tag">待命 <b>8 小時／天</b></span>
@@ -139,9 +139,9 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     <div class="arrow">→</div>
     <div class="stage edge"><div class="n">② 切段</div><h3>語音活動偵測</h3><p>判斷有沒有人在講話、誰在講（櫃台／客人）、這一組客人結束了沒。</p><span class="where">店內小電腦</span></div>
     <div class="arrow">→</div>
-    <div class="stage cloud"><div class="n">③ 聽寫</div><h3>串流語音辨識</h3><p>台灣國語、台語、中英夾雜。載入菜單詞庫提高品名命中率。</p><span class="where">雲端</span></div>
+    <div class="stage cloud"><div class="n">③ 聽寫</div><h3>串流語音辨識</h3><p>Gemini 3.5 Transcribe Live。載入菜單詞庫提高品名命中率，輸出轉繁體。</p><span class="where">雲端 Gemini</span></div>
     <div class="arrow">→</div>
-    <div class="stage cloud"><div class="n">④ 理解</div><h3>餐點差異抽取</h3><p>LLM 對照菜單主庫，把這句話轉成「加／減／改」指令，附信心分數。</p><span class="where">雲端 Claude</span></div>
+    <div class="stage cloud"><div class="n">④ 理解</div><h3>餐點差異抽取</h3><p>Gemini 3.8 Flash 直覺式判斷：對照菜單主庫，把這句話轉成「加／減／改」指令，附信心分數。</p><span class="where">雲端 Gemini</span></div>
     <div class="arrow">→</div>
     <div class="stage cloud"><div class="n">⑤ 狀態</div><h3>草稿單狀態機</h3><p>逐筆套用指令、記錄版本、判斷現在是「點餐中」還是「核對中」。</p><span class="where">雲端／店內</span></div>
     <div class="arrow">→</div>
@@ -218,7 +218,7 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     </tbody>
   </table></div>
 
-  <h2>7. POS 串接的三條路（要先問 POS 廠商）</h2>
+  <h2>7. POS 串接的三條路（POS 已定：社守 GeoShop）</h2>
   <div class="tbl"><table>
     <thead><tr><th>方式</th><th>做法</th><th>優點</th><th>風險</th><th>評估</th></tr></thead>
     <tbody>
@@ -257,8 +257,8 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     <div class="card"><h3>風險：環境噪音與台語</h3><p>早餐店尖峰很吵、客人講台語或中英夾雜。對策：指向性麥克風、菜單詞庫加權、第一階段人工標註 200 句對話做評測集。</p></div>
     <div class="card"><h3>風險：POS 不開放</h3><p>整個價值有一半在自動出單。對策：第一階段用方式 C 試跑，同時去問廠商 API。</p></div>
     <div class="card"><h3>風險：櫃台不信任</h3><p>平板顯示錯一次，櫃台就不看了。對策：前兩週只顯示不放行，讓櫃台看到它「會跟上」再開自動。</p></div>
-    <div class="card"><h3>待決 ①：POS 廠商與介面</h3><p>兩間店 POS 是哪家？有沒有 API 或外送平台介接？這決定第 7 節走哪條路。</p></div>
-    <div class="card"><h3>待決 ②：先做哪間店</h3><p>建議先做一間、跑滿一個月對帳後再複製到第二間。</p></div>
+    <div class="card"><h3>已定 ①：POS 為社守（GeoShop）</h3><p>成本系統已用 HTTP API 讀取其後台；社守官方有 Uber Eats／線上訂單自動接收通道，要問能否開放給自家系統當方式 A。</p></div>
+    <div class="card"><h3>已定 ②：先做大德店</h3><p>跑滿一個月對帳後再複製到岡山。</p></div>
     <div class="card"><h3>待決 ③：套餐與加購規則</h3><p>「+蛋+飲料」的套餐碼、加購價、飲料冷熱甜度，需要一份櫃台實際的點法清單。</p></div>
   </div>
 
@@ -268,6 +268,6 @@ td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-sp
     <div class="ph">第 1 階段 · 3 週</div><div class="body"><b>只顯示、不出單。</b>平板即時顯示草稿單，櫃台照舊打 POS。每天對帳看命中率。目標：品項命中 ≥ 95%。</div>
     <div class="ph">第 2 階段 · 2 週</div><div class="body"><b>櫃台確認後出單。</b>接 POS（A 或 C），櫃台按確認才送。目標：確認→出單 &lt; 2 秒，漏單 0。</div>
     <div class="ph">第 3 階段 · 2 週</div><div class="body"><b>開快速通道。</b>符合條件自動放行＋3 秒撤銷。目標：自動放行準確率 ≥ 98%、佔比 ≥ 30%。</div>
-    <div class="ph">第 4 階段</div><div class="body"><b>複製到第二間店。</b>菜單差異只改設定，不改程式。</div>
+    <div class="ph">第 4 階段</div><div class="body"><b>複製到岡山店。</b>菜單差異只改設定，不改程式。</div>
   </div>
 </div>
