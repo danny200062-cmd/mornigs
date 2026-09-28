@@ -1,0 +1,273 @@
+<title>莫尼旁聽點餐系統藍圖</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F2F4F6; --surface:#FFFFFF; --surface-2:#E9EDF1; --line:#D3DAE1;
+  --ink:#1B2430; --ink-2:#4B5663; --muted:#7A8592;
+  --accent:#0F6E8C; --accent-soft:#DCEEF4;
+  --fast:#B96A0B; --fast-soft:#FBEBD2;
+  --ok:#2E7D4F; --ok-soft:#DDF0E4;
+  --warn:#B3403A; --warn-soft:#F6DEDC;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#11161C; --surface:#1A2129; --surface-2:#232C36; --line:#33404C;
+    --ink:#E7ECF1; --ink-2:#B9C3CE; --muted:#8C98A5;
+    --accent:#5FB6D3; --accent-soft:#163C49;
+    --fast:#E5A24A; --fast-soft:#3F2D12;
+    --ok:#6CC493; --ok-soft:#183626;
+    --warn:#E5837D; --warn-soft:#452021;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#11161C; --surface:#1A2129; --surface-2:#232C36; --line:#33404C;
+  --ink:#E7ECF1; --ink-2:#B9C3CE; --muted:#8C98A5;
+  --accent:#5FB6D3; --accent-soft:#163C49;
+  --fast:#E5A24A; --fast-soft:#3F2D12;
+  --ok:#6CC493; --ok-soft:#183626;
+  --warn:#E5837D; --warn-soft:#452021;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.7}
+.wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:32px 64px}
+h1,h2,h3{text-wrap:balance;line-height:1.3;margin:0}
+h1{font-size:30px;font-weight:700}
+h2{font-size:21px;font-weight:700;margin-top:56px;padding-bottom:10px;border-bottom:2px solid var(--line)}
+h3{font-size:16px;font-weight:700}
+p{margin:10px 0;max-width:72ch}
+.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);font-weight:700}
+.lede{font-size:17px;color:var(--ink-2);max-width:64ch}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-family:var(--mono);font-size:12px;color:var(--muted);margin-top:14px}
+.tags{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.tag{background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:4px 12px;font-size:13px}
+.tag b{font-family:var(--mono);font-weight:500;color:var(--accent)}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:18px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h3{margin-bottom:6px}
+.card p{font-size:14px;color:var(--ink-2);margin:6px 0}
+.card ul{margin:6px 0 0;padding-left:18px;font-size:14px;color:var(--ink-2)}
+.card li{margin:3px 0}
+.k{font-family:var(--mono);font-size:12.5px;background:var(--surface-2);padding:1px 6px;border-radius:4px}
+
+/* 流程圖 */
+.flow{display:flex;align-items:stretch;gap:0;margin-top:20px;overflow-x:auto;padding-bottom:6px}
+.stage{flex:1 1 150px;min-width:150px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 12px 10px;position:relative}
+.stage .n{font-family:var(--mono);font-size:11px;color:var(--muted)}
+.stage h3{font-size:15px;margin:2px 0 6px}
+.stage p{font-size:13px;color:var(--ink-2);margin:0}
+.stage .where{display:inline-block;margin-top:8px;font-size:11px;padding:2px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)}
+.stage.edge{border-top:4px solid var(--ok)}
+.stage.cloud{border-top:4px solid var(--accent)}
+.stage.human{border-top:4px solid var(--fast)}
+.arrow{flex:0 0 26px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:20px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--ink-2);margin-top:10px}
+.legend span::before{content:"";display:inline-block;width:12px;height:4px;border-radius:2px;margin-right:6px;vertical-align:middle}
+.legend .e::before{background:var(--ok)} .legend .c::before{background:var(--accent)} .legend .h::before{background:var(--fast)}
+
+/* 狀態機 */
+.states{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:18px}
+.state{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px;border-left:5px solid var(--accent)}
+.state.fast{border-left-color:var(--fast)}
+.state.done{border-left-color:var(--ok)}
+.state h3{font-size:15px}
+.state p{font-size:13px;color:var(--ink-2);margin:4px 0 0}
+.state .trig{font-size:12px;color:var(--muted);margin-top:8px;font-family:var(--mono)}
+
+/* 對照表 */
+table{border-collapse:collapse;width:100%;font-size:14px;margin-top:16px;background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tbl{overflow-x:auto}
+th,td{padding:10px 12px;text-align:left;vertical-align:top;border-bottom:1px solid var(--line)}
+th{background:var(--surface-2);font-weight:700;font-size:13px}
+tr:last-child td{border-bottom:none}
+td.num,th.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.pill{display:inline-block;padding:1px 9px;border-radius:999px;font-size:12px;font-weight:500}
+.pill.fast{background:var(--fast-soft);color:var(--fast)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.acc{background:var(--accent-soft);color:var(--accent)}
+
+/* 對話示例 */
+.dialog{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:16px;display:grid;grid-template-columns:1fr;gap:10px}
+.turn{display:grid;grid-template-columns:64px 1fr 1fr;gap:12px;font-size:14px;align-items:start}
+.turn .who{font-weight:700;color:var(--muted);font-size:13px}
+.turn .who.c{color:var(--ink)}
+.turn .say{color:var(--ink-2)}
+.turn .delta{font-family:var(--mono);font-size:12.5px;color:var(--accent);background:var(--accent-soft);padding:4px 8px;border-radius:6px}
+.turn .delta.fast{color:var(--fast);background:var(--fast-soft)}
+.turn .delta.ok{color:var(--ok);background:var(--ok-soft)}
+@media (max-width:560px){.turn{grid-template-columns:1fr}.turn .who{margin-bottom:-6px}}
+
+.note{border-left:4px solid var(--fast);background:var(--fast-soft);padding:10px 14px;border-radius:0 8px 8px 0;margin-top:14px;font-size:14px}
+.note.acc{border-left-color:var(--accent);background:var(--accent-soft)}
+.phase{display:grid;grid-template-columns:auto 1fr;gap:12px 16px;margin-top:16px}
+.phase .ph{font-family:var(--mono);font-size:13px;color:var(--accent);font-weight:500;white-space:nowrap;padding-top:2px}
+.phase .body{font-size:14px;color:var(--ink-2)}
+.phase .body b{color:var(--ink)}
+</style>
+
+<div class="wrap">
+  <div class="eyebrow">莫尼早午餐 · 岡山店／大德店</div>
+  <h1>旁聽式自動點餐系統 架構藍圖</h1>
+  <p class="lede">櫃台不改流程、不多打一個字。系統在旁邊「聽」櫃台人員和客人講話，邊聽邊把餐點整理成點餐單，客人核對時說改就改，確認後直接送 POS 出單。</p>
+  <div class="meta">
+    <span>版本 v0.1 藍圖</span><span>2026-09-28</span><span>狀態：待老闆拍板</span>
+  </div>
+  <div class="tags">
+    <span class="tag">待命 <b>8 小時／天</b></span>
+    <span class="tag">訂單量 <b>約 200 筆／天</b></span>
+    <span class="tag">尖峰 <b>約 60 筆／小時</b></span>
+    <span class="tag">畫面更新 <b>&lt; 1 秒</b></span>
+    <span class="tag">熟客快速出單 <b>&lt; 5 秒</b></span>
+  </div>
+
+  <h2>0. 五個設計原則</h2>
+  <div class="grid">
+    <div class="card"><h3>櫃台零額外動作</h3><p>正常情況下櫃台只做一件新事：看一眼平板、點一下「確認」。快速通道連確認都不用點。</p></div>
+    <div class="card"><h3>只送「差異」，不重送整張單</h3><p>每一句話進來，模型只回「加什麼、減什麼、改什麼」。這是即時修改能做到 1 秒內的關鍵。</p></div>
+    <div class="card"><h3>人永遠是最後一關</h3><p>系統只產生「草稿單」。送 POS 的動作要嘛櫃台按確認，要嘛系統自動送但留 3 秒可撤銷。</p></div>
+    <div class="card"><h3>聽不懂就標示，不要猜</h3><p>每個品項帶信心分數。低信心的項目在平板上變黃，櫃台一眼看到要再問客人。</p></div>
+    <div class="card"><h3>雲端掛了店還能營業</h3><p>雲端斷線時平板顯示「手動模式」，櫃台照舊打 POS。系統是輔助，不是必經之路。</p></div>
+  </div>
+
+  <h2>1. 整體架構：一句話從麥克風到 POS 的路</h2>
+  <div class="flow">
+    <div class="stage edge"><div class="n">① 收音</div><h3>櫃台麥克風</h3><p>指向性麥克風 ＋ 降噪，只收櫃台 1 公尺內的聲音。</p><span class="where">店內小電腦</span></div>
+    <div class="arrow">→</div>
+    <div class="stage edge"><div class="n">② 切段</div><h3>語音活動偵測</h3><p>判斷有沒有人在講話、誰在講（櫃台／客人）、這一組客人結束了沒。</p><span class="where">店內小電腦</span></div>
+    <div class="arrow">→</div>
+    <div class="stage cloud"><div class="n">③ 聽寫</div><h3>串流語音辨識</h3><p>台灣國語、台語、中英夾雜。載入菜單詞庫提高品名命中率。</p><span class="where">雲端</span></div>
+    <div class="arrow">→</div>
+    <div class="stage cloud"><div class="n">④ 理解</div><h3>餐點差異抽取</h3><p>LLM 對照菜單主庫，把這句話轉成「加／減／改」指令，附信心分數。</p><span class="where">雲端 Claude</span></div>
+    <div class="arrow">→</div>
+    <div class="stage cloud"><div class="n">⑤ 狀態</div><h3>草稿單狀態機</h3><p>逐筆套用指令、記錄版本、判斷現在是「點餐中」還是「核對中」。</p><span class="where">雲端／店內</span></div>
+    <div class="arrow">→</div>
+    <div class="stage human"><div class="n">⑥ 確認</div><h3>櫃台平板</h3><p>即時顯示草稿單，變動處閃一下，低信心變黃。一鍵確認或自動放行。</p><span class="where">櫃台</span></div>
+    <div class="arrow">→</div>
+    <div class="stage cloud"><div class="n">⑦ 出單</div><h3>POS 串接</h3><p>轉成 POS 的「基底品項 ＋ 選項」格式送入，POS 回覆成功後出單。</p><span class="where">POS</span></div>
+  </div>
+  <div class="legend"><span class="e">店內設備（斷網也能跑）</span><span class="c">雲端服務</span><span class="h">人工介入點</span></div>
+  <p>①② 放在店內是為了兩件事：不把整天 8 小時的環境音全部上傳（省錢也顧隱私），以及雲端斷線時麥克風還在錄、恢復後可以補跑。③④ 放雲端是因為辨識與理解需要的算力店內小電腦撐不起來。</p>
+
+  <h2>2. 六個層次各自負責什麼</h2>
+  <div class="grid">
+    <div class="card"><h3>感知層</h3><p>把聲音變成「誰、什麼時候、說了什麼」。</p><ul><li>指向性麥克風＋回音／降噪</li><li>語音活動偵測（沒人講話就不送雲端）</li><li>說話者分離：櫃台 vs 客人（櫃台可用固定聲紋註冊）</li><li>客人分組：靜音 &gt; 20 秒或櫃台說「歡迎光臨／下一位」就切新單</li></ul></div>
+    <div class="card"><h3>理解層</h3><p>把一句話對照菜單，變成結構化指令。</p><ul><li>菜單主庫（<span class="k">Menu_Products</span>）＋ POS 選項群組當成模型的固定知識，放在快取前綴</li><li>輸出固定格式：<span class="k">add / remove / set_qty / set_option / replace</span></li><li>每條指令帶信心分數與來源句子</li><li>同一模型兩種深度：每句話用低深度快速抽取，核對時用高深度總校對</li></ul></div>
+    <div class="card"><h3>訂單狀態層</h3><p>草稿單的唯一真相。</p><ul><li>事件溯源：存的是指令流，不是最後結果，隨時可回放與撤銷</li><li>每筆品項：基底＋選項＋數量＋信心＋來源時間戳</li><li>狀態：聆聽中 → 核對中 → 已確認 → 已出單／已取消</li></ul></div>
+    <div class="card"><h3>人機確認層</h3><p>櫃台唯一看得到的東西。</p><ul><li>平板單頁：左邊草稿單、右邊最近三句聽寫</li><li>變動處高亮 2 秒；低信心項目黃底</li><li>三個鍵：確認出單／改一下／作廢</li><li>快速通道自動送出時顯示 3 秒倒數可撤銷</li></ul></div>
+    <div class="card"><h3>POS 整合層</h3><p>把草稿單翻成 POS 聽得懂的格式。</p><ul><li>沿用成本系統已驗證的對齊邏輯（基底品項 ＋ 變體選項 → 菜單品項，反向使用）</li><li>套餐（+蛋+飲料）展開成 POS 套餐碼</li><li>POS 回覆成功／失敗，失敗自動退回「核對中」</li></ul></div>
+    <div class="card"><h3>營運層</h3><p>撐住 8 小時不中斷。</p><ul><li>看門狗：任一環節 30 秒無心跳自動重啟</li><li>斷線降級：平板顯示手動模式，錄音本地暫存</li><li>每日報表：辨識率、自動放行率、櫃台修正率、每單成本</li><li>音檔不留存，只留文字稿與訂單（保留 30 天供除錯）</li></ul></div>
+  </div>
+
+  <h2>3. 一筆訂單的生命週期</h2>
+  <div class="states">
+    <div class="state"><h3>待命</h3><p>沒有客人。麥克風在錄，但不送雲端。</p><div class="trig">觸發：偵測到對話開始</div></div>
+    <div class="state"><h3>聆聽中</h3><p>每句話產生差異指令，草稿單即時長出來。</p><div class="trig">觸發：櫃台開始複誦</div></div>
+    <div class="state"><h3>核對中</h3><p>櫃台複誦時系統比對複誦內容與草稿單；客人說「改」就套用修改。</p><div class="trig">觸發：客人說「對／好／可以」或櫃台按確認</div></div>
+    <div class="state fast"><h3>快速通道</h3><p>條件全滿足時跳過核對，直接送出並顯示 3 秒撤銷。</p><div class="trig">條件見第 4 節</div></div>
+    <div class="state done"><h3>已出單</h3><p>POS 回覆成功。草稿單封存、開始等下一位。</p><div class="trig">POS ack</div></div>
+    <div class="state"><h3>退回／作廢</h3><p>POS 拒收或櫃台按作廢。退回核對中或直接結束。</p><div class="trig">POS 錯誤 / 手動</div></div>
+  </div>
+
+  <h3 style="margin-top:28px">實際對話會長這樣</h3>
+  <div class="dialog">
+    <div class="turn"><div class="who c">客人</div><div class="say">我要一個燻雞肉大沙拉，胡麻的，然後紅醬的雞肉丸義大利麵</div><div class="delta">add 燻雞肉大沙拉 [醬類=胡麻] ×1 (0.95)<br>add 低脂雞肉丸 [種類=義大利麵, 醬類=紅醬] ×1 (0.92)</div></div>
+    <div class="turn"><div class="who">櫃台</div><div class="say">義大利麵要加蛋嗎？</div><div class="delta">（無指令，標記：待決選項 加蛋）</div></div>
+    <div class="turn"><div class="who c">客人</div><div class="say">加，然後沙拉改凱薩好了</div><div class="delta">set_option 低脂雞肉丸 加購=蛋 (0.90)<br>set_option 燻雞肉大沙拉 醬類=凱薩 (0.88)</div></div>
+    <div class="turn"><div class="who">櫃台</div><div class="say">好，燻雞沙拉凱薩一份、紅醬雞肉丸義大利麵加蛋一份，這樣對嗎？</div><div class="delta ok">狀態 → 核對中；複誦與草稿單一致 ✓</div></div>
+    <div class="turn"><div class="who c">客人</div><div class="say">對，麵改兩份</div><div class="delta">set_qty 低脂雞肉丸 ×2 (0.93) → 平板高亮數量</div></div>
+    <div class="turn"><div class="who">櫃台</div><div class="say">兩份，好。</div><div class="delta ok">櫃台按確認 → 送 POS → 出單</div></div>
+  </div>
+
+  <h2>4. 快速通道 vs 一般通道</h2>
+  <p>熟客一句話點完、櫃台一個「好」就要出單。快速通道不是另一套系統，只是狀態機多一條捷徑，五個條件同時成立才走。</p>
+  <div class="tbl"><table>
+    <thead><tr><th>條件</th><th>快速通道 <span class="pill fast">自動放行</span></th><th>一般通道 <span class="pill acc">櫃台確認</span></th></tr></thead>
+    <tbody>
+      <tr><td>品項對齊</td><td>每一項都是菜單主庫直接命中</td><td>有任何一項靠模糊比對</td></tr>
+      <tr><td>信心分數</td><td>全部 ≥ 0.9</td><td>任一項 &lt; 0.9</td></tr>
+      <tr><td>必選選項</td><td>醬類、種類、麵類等必選都已明講</td><td>有必選選項還沒說（櫃台要問）</td></tr>
+      <tr><td>對話形態</td><td>客人一到兩句講完，櫃台只回「好／OK」</td><td>來回超過兩輪或客人有猶豫詞（「還是」「等一下」）</td></tr>
+      <tr><td>放行方式</td><td>自動送 POS，平板倒數 3 秒可撤銷</td><td>櫃台點「確認出單」</td></tr>
+      <tr><td>目標時間</td><td class="num">客人講完 → 出單 &lt; 5 秒</td><td class="num">按確認 → 出單 &lt; 2 秒</td></tr>
+    </tbody>
+  </table></div>
+  <div class="note">預估比例：熟客與單品訂單約佔 3～4 成可走快速通道。第一個月建議關閉自動放行、只顯示「可快速出單」提示，等自動放行的準確率連續兩週 ≥ 98% 再打開。</div>
+
+  <h2>5. 即時修改怎麼做到</h2>
+  <div class="grid">
+    <div class="card"><h3>差異指令而非整張單</h3><p>模型每次只看「最新一句話 ＋ 目前草稿單摘要」，回一到三條指令。輸入短、輸出短，單次回應目標 &lt; 800 毫秒。</p></div>
+    <div class="card"><h3>核對模式的比對</h3><p>櫃台複誦時，系統把複誦內容當成「第二份草稿」和原草稿比對；不一致的地方標紅，讓櫃台當場發現自己聽錯。</p></div>
+    <div class="card"><h3>指代消解</h3><p>「麵改兩份」「那個沙拉不要了」——模型拿到的草稿單摘要有編號，指令用編號回，不靠品名字串比對。</p></div>
+    <div class="card"><h3>版本與撤銷</h3><p>每條指令都有序號；平板「上一步」就是回放到前一版。POS 送出時附上版本號，避免送到舊版。</p></div>
+  </div>
+
+  <h2>6. 延遲預算（從客人說完到平板更新）</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>環節</th><th class="num">目標</th><th>備註</th></tr></thead>
+    <tbody>
+      <tr><td>語音活動偵測切句</td><td class="num">≤ 300 ms</td><td>句尾靜音 300 ms 視為一句</td></tr>
+      <tr><td>串流語音辨識（末字定稿）</td><td class="num">≤ 400 ms</td><td>用串流 partial 先顯示灰字</td></tr>
+      <tr><td>LLM 差異抽取</td><td class="num">≤ 800 ms</td><td>菜單放快取前綴、串流輸出、低深度</td></tr>
+      <tr><td>狀態套用＋平板推送</td><td class="num">≤ 100 ms</td><td>WebSocket 推送</td></tr>
+      <tr><td><b>合計</b></td><td class="num"><b>≤ 1.6 s</b></td><td>體感上「客人話講完、平板就跟上」</td></tr>
+      <tr><td>確認 → POS 出單</td><td class="num">≤ 2 s</td><td>取決於 POS 介面方式</td></tr>
+    </tbody>
+  </table></div>
+
+  <h2>7. POS 串接的三條路（要先問 POS 廠商）</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>方式</th><th>做法</th><th>優點</th><th>風險</th><th>評估</th></tr></thead>
+    <tbody>
+      <tr><td><b>A. 官方 API</b></td><td>POS 廠商提供下單 API 或第三方外送介接介面，草稿單直接送入</td><td>最穩、有回覆、可查狀態</td><td>廠商不一定開放，可能要付費</td><td><span class="pill ok">首選</span></td></tr>
+      <tr><td><b>B. 模擬前台輸入</b></td><td>在 POS 機上跑小程式，模擬櫃台按鍵順序（RPA）</td><td>不需廠商配合</td><td>POS 改版就壞、速度慢、不能同時人工操作</td><td><span class="pill warn">備案</span></td></tr>
+      <tr><td><b>C. 廚房直出＋POS 補登</b></td><td>草稿單直接印到廚房出單機，櫃台再打 POS 結帳</td><td>最快能上線、驗證整套辨識流程</td><td>POS 沒有訂單就沒有營收數字，櫃台仍要打單</td><td><span class="pill acc">第一階段用來試跑</span></td></tr>
+    </tbody>
+  </table></div>
+  <div class="note acc">POS 送單格式沿用成本系統已經驗證過的對齊規則：菜單品項 → 反推「基底品項 ＋ 變體選項」。這段邏輯已存在（<span class="k">align_resolver.py</span> 的 VARIANT_RULES），反向使用即可，不必重寫。</div>
+
+  <h2>8. 撐住 8 小時、200 筆的營運設計</h2>
+  <div class="grid">
+    <div class="card"><h3>負載其實不高</h3><p>200 筆／8 小時 ≈ 每 2.4 分鐘一筆；尖峰約 60 筆／小時。單一櫃台麥克風天生是序列的，不會有並發問題。</p></div>
+    <div class="card"><h3>只在講話時花錢</h3><p>8 小時裡真正有對話的約 3～4 小時。語音活動偵測在店內做，靜音不上傳。</p></div>
+    <div class="card"><h3>看門狗與心跳</h3><p>麥克風、辨識連線、LLM、平板各自每 10 秒回報心跳；任一環節 30 秒沒回報自動重啟，平板角落顯示綠／黃／紅燈。</p></div>
+    <div class="card"><h3>斷線降級</h3><p>雲端斷線：平板切「手動模式」，櫃台照舊打 POS；店內持續錄音暫存，恢復後可補跑供除錯。</p></div>
+    <div class="card"><h3>每日對帳</h3><p>下班後比對「系統出單」與「POS 實際訂單」：漏單、多單、品項不符。這份報表決定快速通道要不要開。</p></div>
+    <div class="card"><h3>隱私與告知</h3><p>櫃台貼告示「本櫃台錄音用於點餐輔助」。音檔即時處理不落地、文字稿 30 天後刪除。</p></div>
+  </div>
+
+  <h2>9. 成本粗估（每店每日，僅供量級判斷）</h2>
+  <div class="tbl"><table>
+    <thead><tr><th>項目</th><th>假設</th><th class="num">每日</th><th class="num">每月（26 天）</th></tr></thead>
+    <tbody>
+      <tr><td>串流語音辨識</td><td>有效對話 4 小時</td><td class="num">約 NT$50–150</td><td class="num">NT$1,300–3,900</td></tr>
+      <tr><td>LLM 差異抽取</td><td>200 單 × 約 10 次呼叫，菜單走快取</td><td class="num">約 NT$100–450</td><td class="num">NT$2,600–11,700</td></tr>
+      <tr><td>雲端主機與推送</td><td>小型主機</td><td class="num">約 NT$30</td><td class="num">NT$800</td></tr>
+      <tr><td><b>合計</b></td><td></td><td class="num"><b>NT$180–630</b></td><td class="num"><b>NT$4,700–16,400</b></td></tr>
+      <tr><td>一次性硬體</td><td>指向性麥克風、店內小電腦、平板</td><td colspan="2" class="num">約 NT$15,000–25,000／店</td></tr>
+    </tbody>
+  </table></div>
+  <p>區間上下差 3～4 倍，差在 LLM 用哪一級模型與快取命中率。建議先用最強模型把準確率做出來，再用實測資料決定能不能降級省錢。</p>
+
+  <h2>10. 主要風險與待老闆決定的事</h2>
+  <div class="grid">
+    <div class="card"><h3>風險：環境噪音與台語</h3><p>早餐店尖峰很吵、客人講台語或中英夾雜。對策：指向性麥克風、菜單詞庫加權、第一階段人工標註 200 句對話做評測集。</p></div>
+    <div class="card"><h3>風險：POS 不開放</h3><p>整個價值有一半在自動出單。對策：第一階段用方式 C 試跑，同時去問廠商 API。</p></div>
+    <div class="card"><h3>風險：櫃台不信任</h3><p>平板顯示錯一次，櫃台就不看了。對策：前兩週只顯示不放行，讓櫃台看到它「會跟上」再開自動。</p></div>
+    <div class="card"><h3>待決 ①：POS 廠商與介面</h3><p>兩間店 POS 是哪家？有沒有 API 或外送平台介接？這決定第 7 節走哪條路。</p></div>
+    <div class="card"><h3>待決 ②：先做哪間店</h3><p>建議先做一間、跑滿一個月對帳後再複製到第二間。</p></div>
+    <div class="card"><h3>待決 ③：套餐與加購規則</h3><p>「+蛋+飲料」的套餐碼、加購價、飲料冷熱甜度，需要一份櫃台實際的點法清單。</p></div>
+  </div>
+
+  <h2>11. 分階段落地</h2>
+  <div class="phase">
+    <div class="ph">第 0 階段 · 2 週</div><div class="body"><b>錄音與評測集。</b>櫃台裝麥克風只錄不做事，人工整理 200 句真實對話與正確答案。這是之後所有準確率數字的基準。</div>
+    <div class="ph">第 1 階段 · 3 週</div><div class="body"><b>只顯示、不出單。</b>平板即時顯示草稿單，櫃台照舊打 POS。每天對帳看命中率。目標：品項命中 ≥ 95%。</div>
+    <div class="ph">第 2 階段 · 2 週</div><div class="body"><b>櫃台確認後出單。</b>接 POS（A 或 C），櫃台按確認才送。目標：確認→出單 &lt; 2 秒，漏單 0。</div>
+    <div class="ph">第 3 階段 · 2 週</div><div class="body"><b>開快速通道。</b>符合條件自動放行＋3 秒撤銷。目標：自動放行準確率 ≥ 98%、佔比 ≥ 30%。</div>
+    <div class="ph">第 4 階段</div><div class="body"><b>複製到第二間店。</b>菜單差異只改設定，不改程式。</div>
+  </div>
+</div>
